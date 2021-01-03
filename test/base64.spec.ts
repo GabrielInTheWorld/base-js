@@ -34,3 +34,33 @@ test('Base64 encode "foobar"', () => {
   const encoded = FakeBase64.encode('foobar');
   expect(encoded).toBe('Zm9vYmFy');
 });
+
+test('Base64 decode "Zg=="', () => {
+  const decoded = FakeBase64.decode('Zg==');
+  expect(decoded).toBe('f');
+});
+
+test('Base64 decode "Zm8="', () => {
+  const decoded = FakeBase64.decode('Zm8=');
+  expect(decoded).toBe('fo');
+});
+
+test('Base64 decode "Zm9v"', () => {
+  const decoded = FakeBase64.decode('Zm9v');
+  expect(decoded).toBe('foo');
+});
+
+test('Base64 decode "Zm9vYg=="', () => {
+  const decoded = FakeBase64.decode('Zm9vYg==');
+  expect(decoded).toBe('foob');
+});
+
+test('Base64 decode "Zm9vYmE="', () => {
+  const decoded = FakeBase64.decode('Zm9vYmE=');
+  expect(decoded).toBe('fooba');
+});
+
+test('Base64 decode "Zm9vYmFy"', () => {
+  const decoded = FakeBase64.decode('Zm9vYmFy');
+  expect(decoded).toBe('foobar');
+});

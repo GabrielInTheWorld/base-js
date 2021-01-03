@@ -10,20 +10,22 @@ interface EncodingOptions extends BaseCodingOptions {
 }
 
 interface DecodingOptions extends BaseCodingOptions {
-  encodedBits: number;
+  decodedBits: number;
+  outputGroups: number;
 }
 
 export namespace Base64 {
   const OUTPUT_GROUPS = 4;
   const BASE64_BITS = 6;
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890+/';
+  const options = { alphabet, decodedBits: BASE64_BITS, outputGroups: OUTPUT_GROUPS };
 
   export function encode(toEncode: string): string {
-    return BaseCoding.encode(toEncode, { alphabet, decodedBits: BASE64_BITS, outputGroups: OUTPUT_GROUPS });
+    return BaseCoding.encode(toEncode, options);
   }
 
   export function decode(toDecode: string): string {
-    return BaseCoding.decode(toDecode, { alphabet, encodedBits: BASE64_BITS });
+    return BaseCoding.decode(toDecode, options);
   }
 }
 
@@ -31,13 +33,14 @@ export namespace Base32 {
   const OUTPUT_GROUPS = 8;
   const BASE32_BITS = 5;
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  const options = { alphabet, decodedBits: BASE32_BITS, outputGroups: OUTPUT_GROUPS };
 
   export function encode(toEncode: string): string {
-    return BaseCoding.encode(toEncode, { alphabet, decodedBits: BASE32_BITS, outputGroups: OUTPUT_GROUPS });
+    return BaseCoding.encode(toEncode, options);
   }
 
   export function decode(toDecode: string): string {
-    return BaseCoding.decode(toDecode, { alphabet, encodedBits: BASE32_BITS });
+    return BaseCoding.decode(toDecode, options);
   }
 }
 
@@ -45,13 +48,14 @@ export namespace Base16 {
   const OUTPUT_GROUPS = 2;
   const BASE16_BITS = 4;
   const alphabet = '0123456789ABCDEF';
+  const options = { alphabet, decodedBits: BASE16_BITS, outputGroups: OUTPUT_GROUPS };
 
   export function encode(toEncode: string): string {
-    return BaseCoding.encode(toEncode, { alphabet, decodedBits: BASE16_BITS, outputGroups: OUTPUT_GROUPS });
+    return BaseCoding.encode(toEncode, options);
   }
 
   export function decode(toDecode: string): string {
-    return BaseCoding.decode(toDecode, { alphabet, encodedBits: BASE16_BITS });
+    return BaseCoding.decode(toDecode, options);
   }
 }
 
@@ -77,12 +81,18 @@ class BaseCoding {
   }
 
   public static decode(toDecode: string, options: DecodingOptions): string {
-    const { alphabet, encodedBits } = options;
-    const encoded = toDecode.substring(0, toDecode.indexOf(BaseCoding.padding));
+    const { alphabet, decodedBits, outputGroups } = options;
+    if (toDecode.length % outputGroups !== 0) {
+      console.warn(`Length of encoded data is not a multiple of ${outputGroups}:`, toDecode.length);
+      toDecode = BaseCoding.addPadding(toDecode, outputGroups);
+      // throw new Error('Invalid length of encoded message.');
+    }
+    const indexOfPadding = toDecode.indexOf(BaseCoding.padding);
+    const encoded = indexOfPadding > -1 ? toDecode.substring(0, indexOfPadding) : toDecode;
     let bytes = '';
     for (let i = 0; i < encoded.length; ++i) {
       const char = encoded.charAt(i);
-      const baseByte = BaseCoding.addLeadingZeros(alphabet.indexOf(char).toString(2), encodedBits);
+      const baseByte = BaseCoding.addLeadingZeros(alphabet.indexOf(char).toString(2), decodedBits);
       bytes = bytes.concat(baseByte);
     }
     let decoded = '';
@@ -110,7 +120,7 @@ class BaseCoding {
   private static addLeadingZeros(input: string, size: number = BITS): string {
     let result = input;
     while (result.length % size !== 0) {
-      result = `0${input}`;
+      result = `0${result}`;
     }
     return result;
   }
