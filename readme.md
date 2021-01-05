@@ -1,3 +1,5 @@
+![CI](https://github.com/GabrielInTheWorld/base-js/workflows/CI/badge.svg)
+
 # An implementation of Base16, Base32 and Base64
 
 This is an implementation of Base16, Base32 and Base64 specified in [RFC 3548](https://tools.ietf.org/html/rfc3548).
